@@ -12,7 +12,7 @@ export ScalarTrace
 export PlaneWaveDirichlet
 export PlaneWaveNeumann
 
-abstract HelmholtzOperator2D <: IntegralOperator
+abstract type HelmholtzOperator2D <: IntegralOperator end
 scalartype(::HelmholtzOperator2D) = Complex128
 
 immutable SingleLayer{T} <: HelmholtzOperator2D
@@ -77,7 +77,7 @@ function kernelvals(biop::HelmholtzOperator2D, tgeo, bgeo)
     R = norm(r)
 
     kr = k * R
-    hankels = hankelh2([0 1], kr)
+    hankels = hankelh2.([0 1], kr)
     green = -im / 4 * hankels[1]
     gradgreen = k * im / 4 * hankels[2] * r / R
 

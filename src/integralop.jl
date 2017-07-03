@@ -1,4 +1,4 @@
-abstract IntegralOperator <: Operator
+abstract type IntegralOperator <: Operator end
 
 export quadrule, elements
 
@@ -55,34 +55,24 @@ function assemblechunk!(biop::IntegralOperator, tfs::Space, bfs::Space, store)
     print("dots out of 10: ")
     todo, done, pctg = length(test_elements), 0, 0
     for p in eachindex(test_elements)
-      tcell = test_elements[p]
-      for q in eachindex(bsis_elements)
-        bcell = bsis_elements[q]
+        tcell = test_elements[p]
+        for q in eachindex(bsis_elements)
+            bcell = bsis_elements[q]
 
             fill!(zlocal, 0)
             strat = quadrule(biop, tshapes, bshapes, p, tcell, q, bcell, qd)
             momintegrals!(biop, tshapes, bshapes, tcell, bcell, zlocal, strat)
 
-            for j in 1 : num_bshapes
-                for i in 1 : num_tshapes
-                    z = zlocal[i,j]
-                    for (m,a) in tad[p,i]
-                        for (n,b) in bad[q,j]
-                            store(a*z*b, m, n)
-                        end
-                    end
-                end
-            end
-        end
+            for j in 1 : num_bshapes, i in 1 : num_tshapes
+                z = zlocal[i,j]
+                for (n,b) in bad[q,j], (m,a) in tad[p,i]
+                    store(a*z*b, m, n)
+        end end end
 
         done += 1
         new_pctg = round(Int, done / todo * 100)
-        if new_pctg > pctg + 9
-            print(".")
-            pctg = new_pctg
-        end
+        (new_pctg > pctg + 9) && (print("."); pctg = new_pctg)
     end
-
     print(" done. ")
 end
 
@@ -143,7 +133,7 @@ function momintegrals!(biop, tshs, bshs, tcell, bcell, z, strat::DoubleQuadStrat
 end
 
 
-abstract SingularityExtractionStrategy
+abstract type SingularityExtractionStrategy end
 regularpart_quadrule(qr::SingularityExtractionStrategy) = qr.regularpart_quadrule
 
 function momintegrals!(op, g, f, t, s, z, strat::SingularityExtractionStrategy)
